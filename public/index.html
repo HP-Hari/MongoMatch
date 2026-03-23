@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoMatch | Movie Search Powered by Atlas</title>
+    <meta name="description" content="Discover movies instantly with real-time autocomplete and fuzzy search powered by MongoDB Atlas Search. 21,000+ movies at your fingertips.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
+<nav class="navbar" id="navbar">
+    <a href="/" class="logo">Mongo<span>Match</span></a>
+    <div class="nav-center">
+        <div class="nav-search-wrapper" id="navSearchWrapper">
+            <svg class="nav-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="navSearchInput" placeholder="Quick search…" autocomplete="off">
+        </div>
+    </div>
+    <div class="nav-links">
+        <button class="nav-btn" id="navTrending">Trending</button>
+        <button class="nav-btn" id="navGenres">Genres</button>
+        <div class="connection-pill" id="connectionPill">
+            <span class="pill-dot"></span>
+            <span id="pillText">Connecting…</span>
+        </div>
+    </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
+<header class="hero" id="hero">
+    <div class="hero-bg">
+        <div class="hero-blob hero-blob--1"></div>
+        <div class="hero-blob hero-blob--2"></div>
+        <div class="hero-blob hero-blob--3"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge">🎬 Powered by MongoDB Atlas Search</div>
+        <h1>Find your next <span class="gradient-text">great watch</span><br>in seconds.</h1>
+        <p>Real-time autocomplete, fuzzy matching & intelligent filters across 21,000+ movies.</p>
+
+        <!-- Main search bar -->
+        <div class="search-box" id="searchBox">
+            <svg class="search-box-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="Try "Inception" or "Godfther"…" autocomplete="off" spellcheck="false">
+            <button class="search-clear hidden" id="searchClear">✕</button>
+            <button class="search-submit-btn" id="searchSubmit">Search</button>
+        </div>
+        <!-- Autocomplete dropdown -->
+        <div id="acDropdown" class="ac-dropdown hidden"></div>
+
+        <!-- Genre quick-chips (populated by JS) -->
+        <div id="genreChips" class="genre-chips"></div>
+    </div>
+</header>
+
+<!-- ── Filters bar (shown after search) ──────────────────────────────────── -->
+<div class="filters-bar hidden" id="filtersBar">
+    <div class="filters-inner container">
+        <span class="filters-label">Filter:</span>
+
+        <select id="filterGenre" class="filter-select">
+            <option value="">All Genres</option>
+        </select>
+
+        <select id="filterYear" class="filter-select">
+            <option value="">Any Year</option>
+            <option value="2020,2030">2020s</option>
+            <option value="2010,2019">2010s</option>
+            <option value="2000,2009">2000s</option>
+            <option value="1990,1999">1990s</option>
+            <option value="1980,1989">1980s</option>
+            <option value="1900,1979">Before 1980</option>
+        </select>
+
+        <select id="filterSort" class="filter-select">
+            <option value="relevance">Sort: Relevance</option>
+            <option value="rating">Sort: Top Rated</option>
+            <option value="year">Sort: Newest</option>
+        </select>
+
+        <span class="filters-count" id="filtersCount"></span>
+
+        <button class="filter-reset-btn" id="filterReset">Clear all</button>
+    </div>
+</div>
+
+<!-- ── Main content ───────────────────────────────────────────────────────── -->
+<main class="main-content" id="mainContent">
+
+    <!-- Section: Results -->
+    <section class="section" id="resultsSection">
+        <div class="container">
+            <div class="section-header" id="sectionHeader">
+                <h2 id="sectionTitle">Trending <span>Now</span></h2>
+                <p id="sectionSubtitle" class="section-sub">Top-rated movies loved by millions</p>
+            </div>
+            <div class="movies-grid" id="moviesGrid"></div>
+            <div class="load-more-wrap" id="loadMoreWrap">
+                <button class="load-more-btn" id="loadMoreBtn">Load More</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: How it works -->
+    <section class="how-section" id="howSection">
+        <div class="container">
+            <div class="section-header center">
+                <div class="section-tag">Under the Hood</div>
+                <h2>How <span>MongoMatch</span> Works</h2>
+                <p>Built with MongoDB Atlas Search — the same technology powering global streaming platforms.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-icon">⌨️</div>
+                    <h3>Type a character</h3>
+                    <p>Your keystroke triggers an <strong>autocomplete</strong> query via the Atlas Search <code>edgeGram</code> tokenizer — returning suggestions in milliseconds.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-icon">🧠</div>
+                    <h3>Fuzzy matching kicks in</h3>
+                    <p>Made a typo? Atlas Search uses <strong>Levenshtein distance</strong> (maxEdits: 2) to find movies even when spellings differ.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-icon">⚡</div>
+                    <h3>Lucene index returns results</h3>
+                    <p>Results are ranked by a <strong>relevance score</strong> computed by Apache Lucene's BM25 algorithm, giving you the most pertinent movies first.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-icon">🎯</div>
+                    <h3>Filter & refine</h3>
+                    <p>Post-search filters for <strong>genre, decade, and rating</strong> narrow down the 21,000+ movies to exactly what you want.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Tech stack -->
+    <section class="tech-section">
+        <div class="container">
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <span class="tech-badge">Backend</span>
+                    <h4>Node.js + Express</h4>
+                    <p>Lightweight REST API with a dedicated endpoint for autocomplete, full-text search, genres, and trending.</p>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-badge">Database</span>
+                    <h4>MongoDB Atlas</h4>
+                    <p>Cloud-hosted database running on AWS Mumbai, serving 21,000+ records from the <code>sample_mflix</code> dataset.</p>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-badge">Search Engine</span>
+                    <h4>Atlas Search (Lucene)</h4>
+                    <p>Custom index with <code>edgeGram</code> autocomplete and full-text fuzzy search — no external search server needed.</p>
+                </div>
+                <div class="tech-item">
+                    <span class="tech-badge">Frontend</span>
+                    <h4>Vanilla JS + CSS</h4>
+                    <p>Zero-dependency frontend. Premium glassmorphism design, debounced inputs, pagination, and smooth animations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer class="footer">
+    <div class="container footer-inner">
+        <div class="footer-logo">Mongo<span>Match</span></div>
+        <p class="footer-copy">MongoMatch — demonstrating MongoDB Atlas Search autocomplete &amp; fuzzy matching on the <a href="https://www.mongodb.com/docs/atlas/sample-data/sample-mflix/" target="_blank">sample_mflix</a> dataset.</p>
+        <div class="footer-tech">
+            <span>Node.js</span>
+            <span>Express</span>
+            <span>MongoDB Atlas</span>
+            <span>Lucene BM25</span>
+        </div>
+    </div>
+</footer>
+
+<!-- ── Movie Detail Modal ─────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal-box" id="modalBox">
+        <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<!-- ── Toast notification ─────────────────────────────────────────────────── -->
+<div class="toast hidden" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

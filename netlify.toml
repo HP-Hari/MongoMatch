@@ -1,0 +1,19 @@
+[build]
+  publish   = "public"
+  functions = "netlify/functions"
+
+# Redirect all /api/* calls → the serverless function
+[[redirects]]
+  from   = "/api/*"
+  to     = "/.netlify/functions/api/:splat"
+  status = 200
+  force  = true
+
+# SPA fallback — serve index.html for all other routes
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
